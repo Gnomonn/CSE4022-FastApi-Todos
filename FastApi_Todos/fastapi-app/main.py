@@ -12,6 +12,8 @@ class TodoItem(BaseModel):
     title: str
     description: str
     completed: bool
+    priority: str = "medium"
+    category: str = "general"
 
 # JSON 파일 경로
 TODO_FILE = "todo.json"

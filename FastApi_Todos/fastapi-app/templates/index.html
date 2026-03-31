@@ -15,6 +15,12 @@
     <form id="todo-form">
         <input type="text" id="title" placeholder="Title" required>
         <input type="text" id="description" placeholder="Description" required>
+        <select id="priority">
+            <option value="low">Low</option>
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+        </select>
+        <input type="text" id="category" placeholder="Category" value="general">
         <button type="submit">Add To-Do</button>
     </form>
     <script>
@@ -25,7 +31,7 @@
             todoList.innerHTML = '';
             todos.forEach(todo => {
                 const li = document.createElement('li');
-                li.textContent = `${todo.title}: ${todo.description} (Completed: ${todo.completed})`;
+                li.textContent = `[${todo.category}] ${todo.title} (${todo.priority}): ${todo.description} (Completed: ${todo.completed})`;
                 const editButton = document.createElement('button');
                 editButton.textContent = 'Edit';
                 editButton.onclick = () => editTodo(todo.id);
@@ -42,10 +48,12 @@
             const title = prompt('Enter new title:');
             const description = prompt('Enter new description:');
             const completed = confirm('Is this task completed?');
+            const priority = prompt('Enter new priority (low/medium/high):', 'medium');
+            const category = prompt('Enter new category:', 'general');
             const response = await fetch(`/todos/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, title, description, completed })
+                body: JSON.stringify({ id, title, description, completed, priority, category })
             });
             if (response.ok) fetchTodos();
         }
@@ -59,10 +67,12 @@
             event.preventDefault();
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
+            const priority = document.getElementById('priority').value;
+            const category = document.getElementById('category').value;
             const response = await fetch('/todos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: Date.now(), title, description, completed: false })
+                body: JSON.stringify({ id: Date.now(), title, description, completed: false, priority, category })
             });
             if (response.ok) fetchTodos();
         });
