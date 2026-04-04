@@ -1,10 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import json
 import os
 
 app = FastAPI()
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # To-Do 항목 모델
 class TodoItem(BaseModel):
@@ -22,7 +26,10 @@ TODO_FILE = "todo.json"
 def load_todos():
     if os.path.exists(TODO_FILE):
         with open(TODO_FILE, "r") as file:
-            return json.load(file)
+            try:
+                return json.load(file)
+            except json.JSONDecodeError:
+                return []
     return []
 
 # JSON 파일에 To-Do 항목 저장
@@ -47,9 +54,9 @@ def create_todo(todo: TodoItem):
 @app.put("/todos/{todo_id}", response_model=TodoItem)
 def update_todo(todo_id: int, updated_todo: TodoItem):
     todos = load_todos()
-    for todo in todos:
+    for i, todo in enumerate(todos):
         if todo["id"] == todo_id:
-            todo.update(updated_todo.dict())
+            todos[i] = updated_todo.dict()
             save_todos(todos)
             return updated_todo
     raise HTTPException(status_code=404, detail="To-Do item not found")
@@ -58,13 +65,19 @@ def update_todo(todo_id: int, updated_todo: TodoItem):
 @app.delete("/todos/{todo_id}", response_model=dict)
 def delete_todo(todo_id: int):
     todos = load_todos()
+    initial_length = len(todos)
     todos = [todo for todo in todos if todo["id"] != todo_id]
+    if len(todos) == initial_length:
+        raise HTTPException(status_code=404, detail="To-Do item not found")
     save_todos(todos)
     return {"message": "To-Do item deleted"}
 
 # HTML 파일 서빙
 @app.get("/", response_class=HTMLResponse)
 def read_root():
-    with open("templates/index.html", "r") as file:
+    template_path = os.path.join("templates", "index.html")
+    if not os.path.exists(template_path):
+        raise HTTPException(status_code=404, detail="Template not found")
+    with open(template_path, "r", encoding="utf-8") as file:
         content = file.read()
     return HTMLResponse(content=content)

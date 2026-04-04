@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+aiofiles
 pytest
 pytest-html
 httpx

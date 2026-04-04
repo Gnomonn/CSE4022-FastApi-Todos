@@ -1,8 +1,18 @@
 [
     {
-        "id": 1773648694408,
-        "title": "20221543",
-        "description": "\uae40\uc7ac\uc601",
-        "completed": false
+        "id": 1,
+        "title": "Welcome to your new Todo!",
+        "description": "Start by adding some tasks below.",
+        "completed": false,
+        "priority": "high",
+        "category": "Getting Started"
+    },
+    {
+        "id": 2,
+        "title": "Clean UI",
+        "description": "The interface is now using glassmorphism and modern typography.",
+        "completed": true,
+        "priority": "medium",
+        "category": "Design"
     }
 ]
