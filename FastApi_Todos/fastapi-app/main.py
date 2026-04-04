@@ -7,8 +7,18 @@ import os
 
 app = FastAPI()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+else:
+    # Handle the case where static doesn't exist yet (e.g. initial setup)
+    # But usually it should exist
+    os.makedirs(STATIC_DIR, exist_ok=True)
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # To-Do 항목 모델
 class TodoItem(BaseModel):
@@ -20,7 +30,7 @@ class TodoItem(BaseModel):
     category: str = "general"
 
 # JSON 파일 경로
-TODO_FILE = "todo.json"
+TODO_FILE = os.path.join(BASE_DIR, "todo.json")
 
 # JSON 파일에서 To-Do 항목 로드
 def load_todos():
@@ -75,7 +85,7 @@ def delete_todo(todo_id: int):
 # HTML 파일 서빙
 @app.get("/", response_class=HTMLResponse)
 def read_root():
-    template_path = os.path.join("templates", "index.html")
+    template_path = os.path.join(TEMPLATES_DIR, "index.html")
     if not os.path.exists(template_path):
         raise HTTPException(status_code=404, detail="Template not found")
     with open(template_path, "r", encoding="utf-8") as file:
