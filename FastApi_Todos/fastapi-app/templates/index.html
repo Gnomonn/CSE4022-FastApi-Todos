@@ -10,12 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"
-            integrity="sha384-byToCM8SqtxsHckZk9sbPks07ZRsybMGi5FV7ftuLKV90l3zxtePUHG6m7TMRNMW"
+            integrity="sha384-+8nbzwDAyu5kAjqtR/XKxIgPHQD2TflvbZgeDZn5t3JP+OOogNH1jXnfel8ZAgzS"
             crossorigin="anonymous"></script>
     <style>
         /* Fallback if style.css fails or for initial load */
         :root { --bg-color: #0f172a; --text-primary: #f8fafc; }
         body { background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding: 0; min-height: 100vh; font-family: 'Inter', sans-serif; }
+        .badge-due { background: rgba(100,200,255,0.15); color: #7dd3fc; border: 1px solid rgba(100,200,255,0.3); border-radius: 999px; padding: 2px 8px; font-size: 0.75rem; }
+        .badge-due.overdue { background: rgba(255,80,80,0.15); color: #f87171; border-color: rgba(255,80,80,0.3); }
     </style>
     <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -36,6 +38,7 @@
                     <option value="high">High Priority</option>
                 </select>
                 <input type="text" id="category" placeholder="Category (e.g., Work)" value="general">
+                <input type="date" id="due-date" placeholder="Due Date">
                 <button type="submit" class="btn btn-primary full-width">
                     <i data-lucide="plus"></i> Add New Task
                 </button>
@@ -69,6 +72,7 @@
                     <option value="high">High</option>
                 </select>
                 <input type="text" id="edit-category" placeholder="Category" required>
+                <input type="date" id="edit-due-date">
                 <div class="full-width" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
                     <input type="checkbox" id="edit-completed" style="width: auto;">
                     <label for="edit-completed" style="color: var(--text-secondary);">Mark as completed</label>
@@ -81,6 +85,11 @@
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        function isOverdue(todo) {
+            if (!todo.due_date || todo.completed) return false;
+            return todo.due_date < new Date().toISOString().slice(0, 10);
+        }
 
         const todoList = document.getElementById('todo-list');
         const todoForm = document.getElementById('todo-form');
@@ -125,6 +134,7 @@
                         <div class="todo-meta">
                             <span class="badge badge-${todo.priority}">${todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}</span>
                             <span class="badge badge-category">${todo.category}</span>
+                            ${todo.due_date ? `<span class="badge badge-due ${isOverdue(todo) ? 'overdue' : ''}"><i data-lucide="calendar" style="width:12px;height:12px;vertical-align:middle;"></i> ${todo.due_date}</span>` : ""}
                         </div>
                     </div>
                     <div class="todo-actions">
@@ -157,6 +167,7 @@
             document.getElementById('edit-description').value = todo.description;
             document.getElementById('edit-priority').value = todo.priority;
             document.getElementById('edit-category').value = todo.category;
+            document.getElementById('edit-due-date').value = todo.due_date || '';
             document.getElementById('edit-completed').checked = todo.completed;
             editModal.style.display = 'flex';
             lucide.createIcons();
@@ -179,6 +190,7 @@
                 description: document.getElementById('edit-description').value,
                 priority: document.getElementById('edit-priority').value,
                 category: document.getElementById('edit-category').value,
+                due_date: document.getElementById('edit-due-date').value || "",
                 completed: document.getElementById('edit-completed').checked
             };
 
@@ -207,6 +219,7 @@
                 description: descInput.value,
                 priority: priorityInput.value,
                 category: categoryInput.value,
+                due_date: document.getElementById('due-date').value || "",
                 completed: false
             };
 
@@ -219,6 +232,7 @@
             if (response.ok) {
                 titleInput.value = '';
                 descInput.value = '';
+                document.getElementById('due-date').value = '';
                 fetchTodos();
             }
         });

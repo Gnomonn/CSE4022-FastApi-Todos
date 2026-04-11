@@ -28,6 +28,7 @@ class TodoItem(BaseModel):
     completed: bool
     priority: str = "medium"
     category: str = "general"
+    due_date: str = ""
 
 # JSON 파일 경로
 TODO_FILE = os.path.join(BASE_DIR, "todo.json")

@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(py -3 -m uvicorn main:app --host 0.0.0.0 --port 8000)",
+      "Bash(curl -s http://localhost:8000/todos)",
+      "Bash(py -3 -m pytest tests/test_ui.py -v --html=tests/report_ui.html --self-contained-html)",
+      "Bash(wait)",
+      "Bash(py -3 -)",
+      "Bash(2>&1)",
+      "Bash(curl -s \"https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js\")",
+      "Bash(openssl dgst:*)",
+      "Bash(openssl base64:*)",
+      "Bash(cmd.exe /c \"netstat -aon | findstr :8000\")",
+      "Bash(py -3 -m pytest tests/test_ui.py::test_TC11_add_todo_with_due_date tests/test_ui.py::test_TC12_overdue_highlight tests/test_ui.py::test_TC13_edit_due_date -v)",
+      "Bash(curl -s -X POST http://localhost:8000/todos -H \"Content-Type: application/json\" -d \"{\\\\\"id\\\\\":1,\\\\\"title\\\\\":\\\\\"test\\\\\",\\\\\"description\\\\\":\\\\\"d\\\\\",\\\\\"completed\\\\\":false,\\\\\"due_date\\\\\":\\\\\"2099-12-31\\\\\"}\")",
+      "Bash(py -3 -c \"import sys,json; print\\(json.dumps\\(json.load\\(sys.stdin\\), indent=2\\)\\)\")",
+      "Bash(cmd.exe /c \"wmic process where \\\\\"name='python.exe'\\\\\" get ProcessId,CommandLine 2>nul\")",
+      "Bash(cmd.exe /c \"wmic process get ProcessId,CommandLine 2>nul | findstr uvicorn\")",
+      "Bash(cmd.exe /c \"wmic process get ProcessId,CommandLine | findstr python\")",
+      "Bash(cmd.exe /c \"tasklist | findstr -i python\")",
+      "Bash(docker -H npipe:////./pipe/docker_engine ps)",
+      "Bash(cmd.exe /c \"docker ps\")",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :8000\")",
+      "Bash(jobs -l)",
+      "Bash(cmd.exe /c \"netstat -ano | findstr LISTENING | findstr :8000\")",
+      "Bash(curl -s -X POST http://localhost:8000/todos -H \"Content-Type: application/json\" -d '{\"id\":1,\"title\":\"t\",\"description\":\"d\",\"completed\":false,\"due_date\":\"2099-12-31\"}')"
+    ]
+  }
+}
