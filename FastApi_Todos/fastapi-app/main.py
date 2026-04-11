@@ -61,7 +61,7 @@ def create_todo(todo: TodoItem):
     return todo
 
 # To-Do 항목 수정
-@app.put("/todos/{todo_id}", response_model=TodoItem)
+@app.put("/todos/{todo_id}", response_model=TodoItem, responses={404: {"description": "To-Do item not found"}})
 def update_todo(todo_id: int, updated_todo: TodoItem):
     todos = load_todos()
     for i, todo in enumerate(todos):
@@ -72,7 +72,7 @@ def update_todo(todo_id: int, updated_todo: TodoItem):
     raise HTTPException(status_code=404, detail="To-Do item not found")
 
 # To-Do 항목 삭제
-@app.delete("/todos/{todo_id}", response_model=dict)
+@app.delete("/todos/{todo_id}", response_model=dict, responses={404: {"description": "To-Do item not found"}})
 def delete_todo(todo_id: int):
     todos = load_todos()
     initial_length = len(todos)
@@ -83,7 +83,7 @@ def delete_todo(todo_id: int):
     return {"message": "To-Do item deleted"}
 
 # HTML 파일 서빙
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, responses={404: {"description": "Template not found"}})
 def read_root():
     template_path = os.path.join(TEMPLATES_DIR, "index.html")
     if not os.path.exists(template_path):

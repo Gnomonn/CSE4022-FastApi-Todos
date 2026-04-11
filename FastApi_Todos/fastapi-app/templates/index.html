@@ -9,7 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"
+            integrity="sha384-byToCM8SqtxsHckZk9sbPks07ZRsybMGi5FV7ftuLKV90l3zxtePUHG6m7TMRNMW"
+            crossorigin="anonymous"></script>
     <style>
         /* Fallback if style.css fails or for initial load */
         :root { --bg-color: #0f172a; --text-primary: #f8fafc; }
@@ -114,7 +116,7 @@
                 item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
                 
                 item.innerHTML = `
-                    <div class="todo-checkbox ${todo.completed ? 'completed' : ''}" onclick="toggleComplete(${JSON.stringify(todo).replace(/"/g, '&quot;')})">
+                    <div class="todo-checkbox ${todo.completed ? 'completed' : ''}" onclick="toggleComplete(${JSON.stringify(todo).replaceAll('"', '&quot;')})">
                         <i data-lucide="check"></i>
                     </div>
                     <div class="todo-content">
@@ -126,7 +128,7 @@
                         </div>
                     </div>
                     <div class="todo-actions">
-                        <button class="btn-icon" onclick="openEditModal(${JSON.stringify(todo).replace(/"/g, '&quot;')})">
+                        <button class="btn-icon" onclick="openEditModal(${JSON.stringify(todo).replaceAll('"', '&quot;')})">
                             <i data-lucide="edit-3"></i>
                         </button>
                         <button class="btn-icon btn-danger" onclick="deleteTodo(${todo.id})">
@@ -164,13 +166,13 @@
             editModal.style.display = 'none';
         }
 
-        window.onclick = (event) => {
+        globalThis.onclick = (event) => {
             if (event.target == editModal) closeModal();
         };
 
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = parseInt(document.getElementById('edit-id').value);
+            const id = Number.parseInt(document.getElementById('edit-id').value);
             const todo = {
                 id,
                 title: document.getElementById('edit-title').value,
