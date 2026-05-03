@@ -1,11 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import json
 import os
 from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Prometheus 메트릭스 엔드포인트 (/metrics)
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
@@ -15,6 +18,9 @@ class TodoItem(BaseModel):
     id: int
     title: str
     description: str
+    priority: str = "medium"
+    category: str = "general"
+    due_date: str = ""
     completed: bool
 
 # JSON 파일 경로
