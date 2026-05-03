@@ -1,8 +1,8 @@
 fastapi
 uvicorn[standard]
-aiofiles
-requests
 pytest
 pytest-html
 httpx
 pytest-cov
+prometheus-fastapi-instrumentator
+prometheus-client
