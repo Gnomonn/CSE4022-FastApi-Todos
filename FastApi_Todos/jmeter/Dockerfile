@@ -1,14 +1,14 @@
-# Dockerfile for ARM (aarch64) JMeter image
-FROM openjdk:11-jre-slim
+# Dockerfile for JMeter image
+FROM ubuntu:22.04
 
 # Set JMeter version and environment variables
 ENV JMETER_VERSION=5.4.1
 ENV JMETER_HOME=/opt/apache-jmeter-${JMETER_VERSION}
 ENV PATH=${JMETER_HOME}/bin:$PATH
 
-# Install required packages (wget, unzip)
+# Install required packages (wget, unzip, java)
 RUN apt-get update && \
-    apt-get install -y wget unzip && \
+    apt-get install -y wget unzip openjdk-11-jre-headless && \
     rm -rf /var/lib/apt/lists/*
 
 # Download and extract Apache JMeter
