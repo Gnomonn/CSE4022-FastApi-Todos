@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notion Tasks | workspace</title>
+    <title>Modern To-Do | Stay Organized</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -74,7 +74,7 @@
                     <div class="page-emoji-container">
                         <span id="page-emoji" class="page-emoji" onclick="changePageEmoji()">📝</span>
                     </div>
-                    <h1 id="page-title" class="page-title">Personal Tasks</h1>
+                    <h1 id="page-title" class="page-title">My Tasks</h1>
                     <p class="page-description">A minimal workspace to manage your daily tasks, track progress, and organize priorities.</p>
                 </header>
 
@@ -282,10 +282,23 @@
         let selectedFormEmoji = '📝';
         let selectedEditEmoji = '📝';
 
+        // DOM elements
+        const todoForm = document.getElementById('todo-form');
+        const editModal = document.getElementById('edit-modal');
+        const editForm = document.getElementById('edit-form');
+
         // Load Theme from LocalStorage
         const savedTheme = localStorage.getItem('notion-theme') || 'theme-dark';
         document.body.className = savedTheme;
         updateThemeToggleButtonText(savedTheme);
+
+        const pageEmojis = ['📝', '🚀', '💡', '🔥', '🎨', '💼', '🏠', '🌱', '☕'];
+        function changePageEmoji() {
+            const currentEmoji = document.getElementById('page-emoji').innerText;
+            let nextIndex = (pageEmojis.indexOf(currentEmoji) + 1) % pageEmojis.length;
+            if (nextIndex < 0) nextIndex = 0;
+            document.getElementById('page-emoji').innerText = pageEmojis[nextIndex];
+        }
 
         function toggleTheme() {
             const current = document.body.className;
@@ -435,6 +448,9 @@
                         ${todo.due_date ? `<span class="badge badge-due ${isOverdue(todo) ? 'overdue' : ''}"><i data-lucide="calendar"></i> ${todo.due_date}</span>` : ""}
                     </div>
                     <div class="todo-actions">
+                        <button class="btn-icon" onclick='openEditModal(${JSON.stringify(todo).replaceAll("'", "&apos;")})'>
+                            <i data-lucide="edit-3"></i>
+                        </button>
                         <button class="btn-icon btn-danger" onclick="deleteTodo(${todo.id})">
                             <i data-lucide="trash-2"></i>
                         </button>
