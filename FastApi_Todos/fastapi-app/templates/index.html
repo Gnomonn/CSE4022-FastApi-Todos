@@ -1,207 +1,609 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern To-Do | Stay Organized</title>
+    <title>Notion Tasks | workspace</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"
-            integrity="sha384-+8nbzwDAyu5kAjqtR/XKxIgPHQD2TflvbZgeDZn5t3JP+OOogNH1jXnfel8ZAgzS"
-            crossorigin="anonymous"></script>
-    <style>
-        /* Fallback if style.css fails or for initial load */
-        :root { --bg-color: #0f172a; --text-primary: #f8fafc; }
-        body { background-color: var(--bg-color); color: var(--text-primary); margin: 0; padding: 0; min-height: 100vh; font-family: 'Inter', sans-serif; }
-        .badge-due { background: rgba(100,200,255,0.15); color: #7dd3fc; border: 1px solid rgba(100,200,255,0.3); border-radius: 999px; padding: 2px 8px; font-size: 0.75rem; }
-        .badge-due.overdue { background: rgba(255,80,80,0.15); color: #f87171; border-color: rgba(255,80,80,0.3); }
-    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>My Tasks</h1>
-            <p class="subtitle">Stay productive and organized.</p>
-        </header>
-
-        <section class="todo-form-container">
-            <form id="todo-form" class="todo-form">
-                <input type="text" id="title" class="full-width" placeholder="What needs to be done?" required>
-                <input type="text" id="description" class="full-width" placeholder="Add a description..." required>
-                <select id="priority">
-                    <option value="low">Low Priority</option>
-                    <option value="medium" selected>Medium Priority</option>
-                    <option value="high">High Priority</option>
-                </select>
-                <input type="text" id="category" placeholder="Category (e.g., Work)" value="general">
-                <input type="date" id="due-date" placeholder="Due Date">
-                <button type="submit" class="btn btn-primary full-width">
-                    <i data-lucide="plus"></i> Add New Task
-                </button>
-            </form>
-        </section>
-
-        <!-- Progress Dashboard -->
-        <div class="progress-dashboard" id="progress-dashboard" style="display: none;">
-            <div class="progress-header">
-                <span id="progress-text">0 of 0 tasks completed</span>
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <span id="progress-percentage">0%</span>
-                    <button id="clear-completed-btn" class="btn-icon btn-danger" onclick="clearCompleted()" title="Clear Completed Tasks" style="display: none; padding: 4px; border-radius: 6px;">
-                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                    </button>
+<body class="theme-dark">
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="workspace-badge">
+                    <span class="workspace-icon">🚀</span>
+                    <span class="workspace-name">Workspace</span>
                 </div>
             </div>
-            <div class="progress-bar-container">
-                <div id="progress-bar-fill" class="progress-bar-fill"></div>
-            </div>
-        </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Views</div>
+                    <a href="#" class="nav-link active" onclick="switchView('list', this)">
+                        <i data-lucide="list"></i> List View
+                    </a>
+                    <a href="#" class="nav-link" onclick="switchView('board', this)">
+                        <i data-lucide="kanban"></i> Kanban Board
+                    </a>
+                    <a href="#" class="nav-link" onclick="switchView('table', this)">
+                        <i data-lucide="table"></i> Table View
+                    </a>
+                </div>
 
-        <div id="todo-list" class="todo-list">
-            <!-- Loading state or fallback -->
-            <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
-                <p>Loading your tasks...</p>
+                <div class="nav-section">
+                    <div class="nav-section-title">Categories</div>
+                    <div id="category-filters">
+                        <!-- Categories dynamically loaded -->
+                    </div>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="progress-box">
+                    <div class="progress-info">
+                        <span id="progress-text">0/0 completed</span>
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                    </div>
+                </div>
+                <button id="theme-toggle" class="btn-theme-toggle" onclick="toggleTheme()">
+                    <i data-lucide="sun" class="sun-icon"></i>
+                    <i data-lucide="moon" class="moon-icon"></i>
+                    <span id="theme-text">Light Mode</span>
+                </button>
             </div>
-        </div>
+        </aside>
+
+        <!-- Main Content Workspace -->
+        <main class="main-content">
+            <!-- Cover image placeholder -->
+            <div class="page-cover"></div>
+            
+            <div class="workspace-container">
+                <!-- Notion Page Header -->
+                <header class="page-header">
+                    <div class="page-emoji-container">
+                        <span id="page-emoji" class="page-emoji" onclick="changePageEmoji()">📝</span>
+                    </div>
+                    <h1 id="page-title" class="page-title">Personal Tasks</h1>
+                    <p class="page-description">A minimal workspace to manage your daily tasks, track progress, and organize priorities.</p>
+                </header>
+
+                <!-- Quick Database Row Add -->
+                <section class="quick-add-section">
+                    <form id="todo-form" class="quick-add-form">
+                        <div class="form-row-top">
+                            <div class="emoji-picker-container">
+                                <button type="button" id="form-emoji-btn" onclick="toggleEmojiDropdown('form-emoji-dropdown')" class="emoji-btn">📝</button>
+                                <div id="form-emoji-dropdown" class="emoji-dropdown hidden">
+                                    <span onclick="selectFormEmoji('📝')">📝</span>
+                                    <span onclick="selectFormEmoji('💼')">💼</span>
+                                    <span onclick="selectFormEmoji('🏠')">🏠</span>
+                                    <span onclick="selectFormEmoji('🛒')">🛒</span>
+                                    <span onclick="selectFormEmoji('📚')">📚</span>
+                                    <span onclick="selectFormEmoji('💡')">💡</span>
+                                    <span onclick="selectFormEmoji('🏋️')">🏋️</span>
+                                    <span onclick="selectFormEmoji('🔥')">🔥</span>
+                                    <span onclick="selectFormEmoji('⭐')">⭐</span>
+                                </div>
+                            </div>
+                            <input type="text" id="title" placeholder="Untitled Task" required class="input-title">
+                        </div>
+                        <div class="form-row-bottom">
+                            <input type="text" id="description" placeholder="Add description..." required class="input-desc">
+                            <select id="priority" class="select-field">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                            <input type="text" id="category" placeholder="Category (e.g. Work)" value="general" class="input-field">
+                            <input type="date" id="due-date" class="input-date">
+                            <button type="submit" class="btn-submit">
+                                <i data-lucide="plus"></i> Add
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Main View Contents -->
+                <div class="view-wrapper">
+                    <!-- List View Container -->
+                    <div id="list-view" class="view-container active">
+                        <div id="todo-list" class="todo-list">
+                            <!-- Tasks render here -->
+                        </div>
+                    </div>
+
+                    <!-- Kanban Board Container -->
+                    <div id="board-view" class="view-container">
+                        <div class="kanban-board">
+                            <!-- Column 1: To Do -->
+                            <div class="kanban-column" id="col-todo">
+                                <div class="column-header">
+                                    <span class="column-dot todo"></span>
+                                    <span class="column-name">To Do</span>
+                                    <span class="column-count" id="count-todo">0</span>
+                                </div>
+                                <div class="column-cards" id="cards-todo"></div>
+                            </div>
+                            <!-- Column 2: In Progress -->
+                            <div class="kanban-column" id="col-progress">
+                                <div class="column-header">
+                                    <span class="column-dot progress"></span>
+                                    <span class="column-name">In Progress</span>
+                                    <span class="column-count" id="count-progress">0</span>
+                                </div>
+                                <div class="column-cards" id="cards-progress"></div>
+                            </div>
+                            <!-- Column 3: Completed -->
+                            <div class="kanban-column" id="col-completed">
+                                <div class="column-header">
+                                    <span class="column-dot completed"></span>
+                                    <span class="column-name">Completed</span>
+                                    <span class="column-count" id="count-completed">0</span>
+                                </div>
+                                <div class="column-cards" id="cards-completed"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table View Container -->
+                    <div id="table-view" class="view-container">
+                        <div class="table-wrapper">
+                            <table class="notion-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;"></th>
+                                        <th style="width: 40px;"></th>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Category</th>
+                                        <th>Due Date</th>
+                                        <th style="width: 80px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                    <!-- Table rows render here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- Edit Modal -->
     <div id="edit-modal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h2 style="font-family: 'Outfit', sans-serif;">Edit Task</h2>
+                <h2>Page Detail</h2>
                 <button class="btn-icon" onclick="closeModal()">
                     <i data-lucide="x"></i>
                 </button>
             </div>
-            <form id="edit-form" class="todo-form">
+            <form id="edit-form" class="modal-form">
                 <input type="hidden" id="edit-id">
-                <input type="text" id="edit-title" class="full-width" placeholder="Title" required>
-                <input type="text" id="edit-description" class="full-width" placeholder="Description" required>
-                <select id="edit-priority">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select>
-                <input type="text" id="edit-category" placeholder="Category" required>
-                <input type="date" id="edit-due-date">
-                <div class="full-width" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
-                    <input type="checkbox" id="edit-completed" style="width: auto;">
-                    <label for="edit-completed" style="color: var(--text-secondary);">Mark as completed</label>
+                
+                <div class="modal-property-row">
+                    <span class="property-label"><i data-lucide="smile"></i> Icon</span>
+                    <div class="property-value">
+                        <div class="emoji-picker-container">
+                            <button type="button" id="edit-emoji-btn" onclick="toggleEmojiDropdown('edit-emoji-dropdown')" class="emoji-btn">📝</button>
+                            <div id="edit-emoji-dropdown" class="emoji-dropdown hidden">
+                                <span onclick="selectEditEmoji('📝')">📝</span>
+                                <span onclick="selectEditEmoji('💼')">💼</span>
+                                <span onclick="selectEditEmoji('🏠')">🏠</span>
+                                <span onclick="selectEditEmoji('🛒')">🛒</span>
+                                <span onclick="selectEditEmoji('📚')">📚</span>
+                                <span onclick="selectEditEmoji('💡')">💡</span>
+                                <span onclick="selectEditEmoji('🏋️')">🏋️</span>
+                                <span onclick="selectEditEmoji('🔥')">🔥</span>
+                                <span onclick="selectEditEmoji('⭐')">⭐</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary full-width">Update Task</button>
+
+                <div class="modal-property-row">
+                    <span class="property-label"><i data-lucide="type"></i> Name</span>
+                    <div class="property-value">
+                        <input type="text" id="edit-title" required class="notion-borderless-input font-bold">
+                    </div>
+                </div>
+
+                <div class="modal-property-row">
+                    <span class="property-label"><i data-lucide="align-left"></i> Description</span>
+                    <div class="property-value">
+                        <input type="text" id="edit-description" required class="notion-borderless-input">
+                    </div>
+                </div>
+
+                <div class="modal-property-row">
+                    <span class="property-label"><i data-lucide="check-square"></i> Status</span>
+                    <div class="property-value">
+                        <select id="edit-status" class="select-property">
+                            <option value="To Do">To Do</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-property-row">
+                    <span class="property-label"><i data-lucide="flag"></i> Priority</span>
+                    <div class="property-value">
+                        <select id="edit-priority" class="select-property">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-property-row">
+                    <span class="property-label"><i data-lucide="tag"></i> Category</span>
+                    <div class="property-value">
+                        <input type="text" id="edit-category" required class="notion-borderless-input">
+                    </div>
+                </div>
+
+                <div class="modal-property-row">
+                    <span class="property-label"><i data-lucide="calendar"></i> Due Date</span>
+                    <div class="property-value">
+                        <input type="date" id="edit-due-date" class="input-date-property">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" onclick="deleteTodoFromModal()">
+                        <i data-lucide="trash-2"></i> Delete Page
+                    </button>
+                    <button type="submit" class="btn btn-save">Save Changes</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+        let currentView = 'list';
+        let selectedCategory = 'all';
+        let allTodos = [];
+        let selectedFormEmoji = '📝';
+        let selectedEditEmoji = '📝';
 
-        function updateProgress(todos) {
-            const dashboard = document.getElementById('progress-dashboard');
-            if (todos.length === 0) {
-                dashboard.style.display = 'none';
-                return;
-            }
-            dashboard.style.display = 'block';
-            
-            const total = todos.length;
-            const completed = todos.filter(t => t.completed).length;
-            const percentage = Math.round((completed / total) * 100);
-            
-            document.getElementById('progress-text').innerText = `${completed} of ${total} tasks completed`;
-            document.getElementById('progress-percentage').innerText = `${percentage}%`;
-            document.getElementById('progress-bar-fill').style.width = `${percentage}%`;
-            
-            const clearBtn = document.getElementById('clear-completed-btn');
-            if (completed > 0) {
-                clearBtn.style.display = 'flex';
+        // Load Theme from LocalStorage
+        const savedTheme = localStorage.getItem('notion-theme') || 'theme-dark';
+        document.body.className = savedTheme;
+        updateThemeToggleButtonText(savedTheme);
+
+        function toggleTheme() {
+            const current = document.body.className;
+            const next = current === 'theme-light' ? 'theme-dark' : 'theme-light';
+            document.body.className = next;
+            localStorage.setItem('notion-theme', next);
+            updateThemeToggleButtonText(next);
+        }
+
+        function updateThemeToggleButtonText(theme) {
+            const text = document.getElementById('theme-text');
+            if (theme === 'theme-light') {
+                text.innerText = 'Dark Mode';
             } else {
-                clearBtn.style.display = 'none';
+                text.innerText = 'Light Mode';
             }
         }
 
-        function isOverdue(todo) {
-            if (!todo.due_date || todo.completed) return false;
-            return todo.due_date < new Date().toISOString().slice(0, 10);
+        function toggleEmojiDropdown(id) {
+            const dropdown = document.getElementById(id);
+            dropdown.classList.toggle('hidden');
         }
 
-        const todoList = document.getElementById('todo-list');
-        const todoForm = document.getElementById('todo-form');
-        const editModal = document.getElementById('edit-modal');
-        const editForm = document.getElementById('edit-form');
+        function selectFormEmoji(emoji) {
+            selectedFormEmoji = emoji;
+            document.getElementById('form-emoji-btn').innerText = emoji;
+            document.getElementById('form-emoji-dropdown').classList.add('hidden');
+        }
+
+        function selectEditEmoji(emoji) {
+            selectedEditEmoji = emoji;
+            document.getElementById('edit-emoji-btn').innerText = emoji;
+            document.getElementById('edit-emoji-dropdown').classList.add('hidden');
+        }
+
+        function switchView(viewName, el) {
+            currentView = viewName;
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            el.classList.add('active');
+
+            document.querySelectorAll('.view-container').forEach(view => view.classList.remove('active'));
+            document.getElementById(`${viewName}-view`).classList.add('active');
+
+            renderCurrentView();
+        }
 
         async function fetchTodos() {
             try {
                 const response = await fetch('/todos');
-                const todos = await response.json();
-                renderTodos(todos);
+                allTodos = await response.json();
+                
+                // Update categories list
+                renderCategories();
+                renderCurrentView();
+                updateProgress(allTodos);
             } catch (err) {
                 console.error('Failed to fetch todos:', err);
-                todoList.innerHTML = '<p style="text-align:center; color:var(--danger);">Error loading tasks.</p>';
             }
         }
 
-        function renderTodos(todos) {
-            updateProgress(todos);
+        function renderCategories() {
+            const categories = ['all', ...new Set(allTodos.map(todo => todo.category))];
+            const filterContainer = document.getElementById('category-filters');
+            filterContainer.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const link = document.createElement('a');
+                link.href = '#';
+                link.className = `nav-link ${selectedCategory === cat ? 'active' : ''}`;
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    selectedCategory = cat;
+                    document.querySelectorAll('#category-filters .nav-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    renderCurrentView();
+                };
+                
+                const emoji = cat === 'all' ? '📌' : '🏷️';
+                link.innerHTML = `<span>${emoji}</span> ${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+                filterContainer.appendChild(link);
+            });
+        }
 
+        function getFilteredTodos() {
+            if (selectedCategory === 'all') return allTodos;
+            return allTodos.filter(t => t.category === selectedCategory);
+        }
+
+        function updateProgress(todos) {
+            const total = todos.length;
+            const completed = todos.filter(t => t.status === 'Completed' || t.completed).length;
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+            
+            document.getElementById('progress-text').innerText = `${completed}/${total} completed`;
+            document.getElementById('progress-percentage').innerText = `${percentage}%`;
+            document.getElementById('progress-bar-fill').style.width = `${percentage}%`;
+        }
+
+        function renderCurrentView() {
+            const filtered = getFilteredTodos();
+            
+            if (currentView === 'list') {
+                renderListView(filtered);
+            } else if (currentView === 'board') {
+                renderBoardView(filtered);
+            } else if (currentView === 'table') {
+                renderTableView(filtered);
+            }
+            lucide.createIcons();
+        }
+
+        function isOverdue(todo) {
+            if (!todo.due_date || todo.status === 'Completed' || todo.completed) return false;
+            return todo.due_date < new Date().toISOString().slice(0, 10);
+        }
+
+        // 1. List View Renderer
+        function renderListView(todos) {
+            const listContainer = document.getElementById('todo-list');
             if (todos.length === 0) {
-                todoList.innerHTML = `
-                    <div style="text-align: center; color: var(--text-secondary); padding: 4rem 2rem; background: var(--card-bg); border-radius: 1.5rem; border: 1px dashed var(--border-color);">
-                        <i data-lucide="clipboard-check" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.5;"></i>
-                        <p>No tasks yet. Add one above!</p>
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i data-lucide="clipboard-check"></i>
+                        <p>No pages yet. Create one above!</p>
                     </div>
                 `;
-                lucide.createIcons();
                 return;
             }
 
-            todoList.innerHTML = '';
+            listContainer.innerHTML = '';
             todos.sort((a, b) => b.id - a.id).forEach(todo => {
+                const isChecked = todo.status === 'Completed' || todo.completed;
                 const item = document.createElement('div');
-                item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
-                
+                item.className = `todo-item ${isChecked ? 'completed' : ''}`;
                 item.innerHTML = `
-                    <div class="todo-checkbox ${todo.completed ? 'completed' : ''}" onclick="toggleComplete(${JSON.stringify(todo).replaceAll('"', '&quot;')})">
+                    <div class="todo-checkbox ${isChecked ? 'completed' : ''}" onclick="toggleComplete(${todo.id})">
                         <i data-lucide="check"></i>
                     </div>
-                    <div class="todo-content">
+                    <span class="todo-emoji">${todo.emoji || '📝'}</span>
+                    <div class="todo-content" onclick='openEditModal(${JSON.stringify(todo).replaceAll("'", "&apos;")})'>
                         <div class="todo-title">${todo.title}</div>
                         <div class="todo-description">${todo.description}</div>
-                        <div class="todo-meta">
-                            <span class="badge badge-${todo.priority}">${todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}</span>
-                            <span class="badge badge-category">${todo.category}</span>
-                            ${todo.due_date ? `<span class="badge badge-due ${isOverdue(todo) ? 'overdue' : ''}"><i data-lucide="calendar" style="width:12px;height:12px;vertical-align:middle;"></i> ${todo.due_date}</span>` : ""}
-                        </div>
+                    </div>
+                    <div class="todo-meta">
+                        <span class="badge badge-${todo.priority}">${todo.priority}</span>
+                        <span class="badge badge-category">${todo.category}</span>
+                        ${todo.due_date ? `<span class="badge badge-due ${isOverdue(todo) ? 'overdue' : ''}"><i data-lucide="calendar"></i> ${todo.due_date}</span>` : ""}
                     </div>
                     <div class="todo-actions">
-                        <button class="btn-icon" onclick="openEditModal(${JSON.stringify(todo).replaceAll('"', '&quot;')})">
-                            <i data-lucide="edit-3"></i>
-                        </button>
                         <button class="btn-icon btn-danger" onclick="deleteTodo(${todo.id})">
                             <i data-lucide="trash-2"></i>
                         </button>
                     </div>
                 `;
-                todoList.appendChild(item);
+                listContainer.appendChild(item);
             });
-            lucide.createIcons();
         }
 
-        async function toggleComplete(todo) {
-            todo.completed = !todo.completed;
-            const response = await fetch(`/todos/${todo.id}`, {
+        // 2. Board View Renderer
+        function renderBoardView(todos) {
+            const cardsTodo = document.getElementById('cards-todo');
+            const cardsProgress = document.getElementById('cards-progress');
+            const cardsCompleted = document.getElementById('cards-completed');
+
+            cardsTodo.innerHTML = '';
+            cardsProgress.innerHTML = '';
+            cardsCompleted.innerHTML = '';
+
+            let countTodo = 0;
+            let countProgress = 0;
+            let countCompleted = 0;
+
+            todos.forEach(todo => {
+                const card = document.createElement('div');
+                card.className = 'kanban-card';
+                card.onclick = () => openEditModal(todo);
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="card-emoji">${todo.emoji || '📝'}</span>
+                        <span class="card-title">${todo.title}</span>
+                    </div>
+                    <p class="card-desc">${todo.description}</p>
+                    <div class="card-meta">
+                        <span class="badge badge-${todo.priority}">${todo.priority}</span>
+                        <span class="badge badge-category">${todo.category}</span>
+                    </div>
+                    <div class="card-actions-quick" onclick="event.stopPropagation()">
+                        <select onchange="updateStatus(${todo.id}, this.value)" class="quick-status-select">
+                            <option value="To Do" ${todo.status === 'To Do' ? 'selected' : ''}>To Do</option>
+                            <option value="In Progress" ${todo.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Completed" ${todo.status === 'Completed' || todo.completed ? 'selected' : ''}>Completed</option>
+                        </select>
+                    </div>
+                `;
+
+                if (todo.status === 'Completed' || todo.completed) {
+                    cardsCompleted.appendChild(card);
+                    countCompleted++;
+                } else if (todo.status === 'In Progress') {
+                    cardsProgress.appendChild(card);
+                    countProgress++;
+                } else {
+                    cardsTodo.appendChild(card);
+                    countTodo++;
+                }
+            });
+
+            document.getElementById('count-todo').innerText = countTodo;
+            document.getElementById('count-progress').innerText = countProgress;
+            document.getElementById('count-completed').innerText = countCompleted;
+        }
+
+        // 3. Table View Renderer
+        function renderTableView(todos) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            if (todos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No items</td></tr>`;
+                return;
+            }
+
+            todos.forEach(todo => {
+                const isChecked = todo.status === 'Completed' || todo.completed;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="todo-checkbox ${isChecked ? 'completed' : ''}" onclick="toggleComplete(${todo.id})">
+                            <i data-lucide="check" style="width: 10px; height: 10px;"></i>
+                        </div>
+                    </td>
+                    <td><span style="font-size: 1.2rem;">${todo.emoji || '📝'}</span></td>
+                    <td onclick='openEditModal(${JSON.stringify(todo).replaceAll("'", "&apos;")})' style="cursor: pointer; font-weight: 500;">${todo.title}</td>
+                    <td><span class="status-cell ${todo.status.toLowerCase().replace(' ', '-')}">${todo.status}</span></td>
+                    <td><span class="badge badge-${todo.priority}">${todo.priority}</span></td>
+                    <td><span class="badge badge-category">${todo.category}</span></td>
+                    <td><span class="table-date">${todo.due_date || '-'}</span></td>
+                    <td>
+                        <button class="btn-icon btn-danger" onclick="deleteTodo(${todo.id})">
+                            <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Actions
+        async function toggleComplete(id) {
+            const todo = allTodos.find(t => t.id === id);
+            if (!todo) return;
+            
+            const isCompleted = todo.status === 'Completed' || todo.completed;
+            todo.completed = !isCompleted;
+            todo.status = todo.completed ? 'Completed' : 'To Do';
+
+            const response = await fetch(`/todos/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(todo)
             });
             if (response.ok) fetchTodos();
         }
+
+        async function updateStatus(id, newStatus) {
+            const todo = allTodos.find(t => t.id === id);
+            if (!todo) return;
+
+            todo.status = newStatus;
+            todo.completed = newStatus === 'Completed';
+
+            const response = await fetch(`/todos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(todo)
+            });
+            if (response.ok) fetchTodos();
+        }
+
+        // Add
+        todoForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const titleInput = document.getElementById('title');
+            const descInput = document.getElementById('description');
+            const priorityInput = document.getElementById('priority');
+            const categoryInput = document.getElementById('category');
+
+            const todo = {
+                id: Date.now(),
+                title: titleInput.value,
+                description: descInput.value,
+                priority: priorityInput.value,
+                category: categoryInput.value,
+                due_date: document.getElementById('due-date').value || "",
+                completed: false,
+                status: 'To Do',
+                emoji: selectedFormEmoji
+            };
+
+            const response = await fetch('/todos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(todo)
+            });
+
+            if (response.ok) {
+                titleInput.value = '';
+                descInput.value = '';
+                document.getElementById('due-date').value = '';
+                selectFormEmoji('📝'); // reset emoji
+                fetchTodos();
+            }
+        });
+
+        // Edit Modal
+        const editModal = document.getElementById('edit-modal');
+        const editForm = document.getElementById('edit-form');
 
         function openEditModal(todo) {
             document.getElementById('edit-id').value = todo.id;
@@ -210,7 +612,11 @@
             document.getElementById('edit-priority').value = todo.priority;
             document.getElementById('edit-category').value = todo.category;
             document.getElementById('edit-due-date').value = todo.due_date || '';
-            document.getElementById('edit-completed').checked = todo.completed;
+            document.getElementById('edit-status').value = todo.status;
+            
+            selectedEditEmoji = todo.emoji || '📝';
+            document.getElementById('edit-emoji-btn').innerText = selectedEditEmoji;
+
             editModal.style.display = 'flex';
             lucide.createIcons();
         }
@@ -226,6 +632,8 @@
         editForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = Number.parseInt(document.getElementById('edit-id').value);
+            const status = document.getElementById('edit-status').value;
+            
             const todo = {
                 id,
                 title: document.getElementById('edit-title').value,
@@ -233,7 +641,9 @@
                 priority: document.getElementById('edit-priority').value,
                 category: document.getElementById('edit-category').value,
                 due_date: document.getElementById('edit-due-date').value || "",
-                completed: document.getElementById('edit-completed').checked
+                status,
+                completed: status === 'Completed',
+                emoji: selectedEditEmoji
             };
 
             const response = await fetch(`/todos/${id}`, {
@@ -248,51 +658,26 @@
             }
         });
 
-        todoForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const titleInput = document.getElementById('title');
-            const descInput = document.getElementById('description');
-            const priorityInput = document.getElementById('priority');
-            const categoryInput = document.getElementById('category');
-
-            const todo = {
-                id: Date.now(),
-                title: titleInput.value,
-                description: descInput.value,
-                priority: priorityInput.value,
-                category: categoryInput.value,
-                due_date: document.getElementById('due-date').value || "",
-                completed: false
-            };
-
-            const response = await fetch('/todos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(todo)
-            });
-
-            if (response.ok) {
-                titleInput.value = '';
-                descInput.value = '';
-                document.getElementById('due-date').value = '';
-                fetchTodos();
-            }
-        });
-
         async function deleteTodo(id) {
-            if (confirm('Are you sure you want to delete this task?')) {
+            if (confirm('Are you sure you want to delete this page?')) {
                 const response = await fetch(`/todos/${id}`, { method: 'DELETE' });
                 if (response.ok) fetchTodos();
             }
         }
 
-        async function clearCompleted() {
-            if (confirm('Are you sure you want to clear all completed tasks?')) {
-                const response = await fetch('/todos/completed/clear', { method: 'DELETE' });
-                if (response.ok) fetchTodos();
+        async function deleteTodoFromModal() {
+            const id = Number.parseInt(document.getElementById('edit-id').value);
+            if (id && confirm('Are you sure you want to delete this page?')) {
+                const response = await fetch(`/todos/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    closeModal();
+                    fetchTodos();
+                }
             }
         }
 
+        // Initialize Lucide icons
+        lucide.createIcons();
         fetchTodos();
     </script>
 </body>
